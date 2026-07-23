@@ -21,3 +21,6 @@ jobs:
                 context: ./app
                 push: false   # <--- ГОЛОВНА ЗМІНА (було true)
                 tags: test-image:latest # Просто тестова назва для локальної збірки
+            - name: Install dependencies
+              run: cd app && pip install -r requirements.txt && pytest test_app.py -v
+
