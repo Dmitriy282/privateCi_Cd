@@ -57,3 +57,4 @@ pip install -r requirements.txt
 pytest test_app.py -v
 ```
 Use `pytest` as a step in your CI/CD pipeline to ensure code quality before building the image.
+# privateCi_Cd
