@@ -24,7 +24,7 @@ jobs:
             - name: Install dependencies
               env:
               # Замените DATABASE_URL на ту переменную, которую использует ваш app.py
-                DATABASE_URL: sqlite:///:memory: 
-                TESTING: "True"
+                  DATABASE_URL: sqlite:///:memory: 
+                  TESTING: "True"
               run: cd ./app && pip install -r requirements.txt && pytest test_app.py -v
 
