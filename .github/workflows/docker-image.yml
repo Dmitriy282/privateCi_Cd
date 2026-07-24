@@ -11,7 +11,7 @@ jobs:
 
     # Додаємо блок services для запуску контейнерів поруч із тестами
     services:
-      postgres:
+      db:
         image: postgres:15-alpine # Використовуємо легку версію Postgres
         env:
           POSTGRES_USER: test_user
@@ -26,12 +26,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
-      # Якщо вам потрібен ще й Redis (бачу у вас є app.cache.incr)
-      redis:
-        image: redis:alpine
-        ports:
-          - 6379:6379
 
     steps:
       - name: Checkout code
@@ -48,8 +42,7 @@ jobs:
         env:
           # Тепер вказуємо реальне підключення до піднятого Postgres
           SQLALCHEMY_DATABASE_URI: "postgresql://test_user:test_password@localhost:5432/test_db"
-          # Рядок підключення для Redis (якщо потрібен)
-          REDIS_URL: "redis://localhost:6379/0"
+   
           TESTING: "True"
         run: |
           cd ./app
