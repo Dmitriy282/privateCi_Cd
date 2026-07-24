@@ -9,22 +9,49 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Додаємо блок services для запуску контейнерів поруч із тестами
+    services:
+      postgres:
+        image: postgres:15-alpine # Використовуємо легку версію Postgres
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        # Прокидаємо порт, щоб додаток міг підключитися через localhost
+        ports:
+          - 5432:5432
+        # Перевірка здоров'я, щоб тести не почалися до того, як БД буде готова
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # Якщо вам потрібен ще й Redis (бачу у вас є app.cache.incr)
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+
     steps:
-      # 1. Завантажуємо код з репозиторію
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 2. Тільки збираємо образ (БЕЗ відправки)
       - name: Build Docker image
         uses: docker/build-push-action@v5.3.0
         with:
           context: ./app
-          push: false   # <--- ГОЛОВНА ЗМІНА (було true)
-          tags: test-image:latest # Просто тестова назва для локальної збірки
+          push: false
+          tags: test-image:latest
           
-      # 3. Встановлюємо залежності та запускаємо тести
-      - name: Install dependencies
+      - name: Install dependencies and Run Tests
         env:
-          SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
+          # Тепер вказуємо реальне підключення до піднятого Postgres
+          SQLALCHEMY_DATABASE_URI: "postgresql://test_user:test_password@localhost:5432/test_db"
+          # Рядок підключення для Redis (якщо потрібен)
+          REDIS_URL: "redis://localhost:6379/0"
           TESTING: "True"
-        run: cd ./app && pip install -r requirements.txt && pytest test_app.py -v
+        run: |
+          cd ./app
+          pip install -r requirements.txt
+          pytest test_app.py -v
