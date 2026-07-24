@@ -1,30 +1,30 @@
 name: Build Docker Image Only
 
 on:
-    push:
-        branches:
-            - '*'
+  push:
+    branches:
+      - '*'
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        steps:
-            # 1. Завантажуємо код з репозиторію
-            - name: Checkout code
-              uses: actions/checkout@v4
-            
-            # 2. Тільки збираємо образ (БЕЗ відправки)
-            - name: Build Docker image
-              uses: docker/build-push-action@v5.3.0
-              with:
-                context: ./app
-                push: false   # <--- ГОЛОВНА ЗМІНА (було true)
-                tags: test-image:latest # Просто тестова назва для локальної збірки
-            - name: Install dependencies
-              env:
-              # Замените DATABASE_URL на ту переменную, которую использует ваш app.py
-                  SQLALCHEMY_DATABASE_URI: sqlite:///:memory: 
-                  TESTING: "True"
-              run: cd ./app && pip install -r requirements.txt && pytest test_app.py -v
-
+    steps:
+      # 1. Завантажуємо код з репозиторію
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # 2. Тільки збираємо образ (БЕЗ відправки)
+      - name: Build Docker image
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: ./app
+          push: false   # <--- ГОЛОВНА ЗМІНА (було true)
+          tags: test-image:latest # Просто тестова назва для локальної збірки
+          
+      # 3. Встановлюємо залежності та запускаємо тести
+      - name: Install dependencies
+        env:
+          SQLALCHEMY_DATABASE_URI: "sqlite:///:memory:"
+          TESTING: "True"
+        run: cd ./app && pip install -r requirements.txt && pytest test_app.py -v
