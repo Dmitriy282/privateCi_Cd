@@ -1,4 +1,4 @@
-import pytest
+    import pytest
 from unittest.mock import patch
 from app import app, db
 
@@ -6,7 +6,7 @@ from app import app, db
 def client():
     # Configuration for tests: use In-Memory SQLite instead of Postgres
     app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///:memory:')
     
     with app.test_client() as client:
         with app.app_context():
