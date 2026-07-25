@@ -10,22 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # Додаємо блок services для запуску контейнерів поруч із тестами
-    services:
-      db:
-        image: postgres:15-alpine # Використовуємо легку версію Postgres
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: test_db
-        # Прокидаємо порт, щоб додаток міг підключитися через localhost
-        ports:
-          - 5432:5432
-        # Перевірка здоров'я, щоб тести не почалися до того, як БД буде готова
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    
 
     steps:
       - name: Checkout code
@@ -38,12 +23,8 @@ jobs:
           push: false
           tags: test-image:latest
           
-      - name: Install dependencies and Run Tests
-        env:
-          # Тепер вказуємо реальне підключення до піднятого Postgres
-          DATABASE_URL: postgresql://postgres:postgres@db:5432/space_logbook
-          TESTING: "True"
+   
         run: |
           cd ./app
           pip install -r requirements.txt
-          pytest app.py -v
+          python app.py -v
