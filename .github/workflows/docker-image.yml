@@ -41,8 +41,7 @@ jobs:
       - name: Install dependencies and Run Tests
         env:
           # Тепер вказуємо реальне підключення до піднятого Postgres
-          SQLALCHEMY_DATABASE_URI: "postgresql://test_user:test_password@localhost:5432/test_db"
-   
+          DATABASE_URL: postgresql://postgres:postgres@db:5432/space_logbook
           TESTING: "True"
         run: |
           cd ./app
