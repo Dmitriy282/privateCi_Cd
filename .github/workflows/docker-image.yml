@@ -23,9 +23,6 @@ jobs:
           tags: test-image:latest
           
       - name: Install dependencies and run tests
-        env: # Ось тут має бути localhost
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
-          TESTING: "True"
         run: |
           cd ./app
           pip install -r requirements.txt
