@@ -1,40 +1,29 @@
-version: '3.8'
+name: Build Docker Image Only
 
-services:
-  web:
-    build: ./app
-    ports:
-      - "5001:5000"
-    environment:
-      - DATABASE_URL=postgresql://space_admin:supersecret@db:5432/space_logbook
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
+on:
+  push:
+    branches:
+      - '*'
 
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=space_admin
-      - POSTGRES_PASSWORD=supersecret
-      - POSTGRES_DB=space_logbook
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U space_admin"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    # Додаємо блок services для запуску контейнерів поруч із тестами
 
-volumes:
-  pgdata:
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: ./app
+          push: false
+          tags: test-image:latest
+          
+      - name: Install dependencies and run tests
+        run: |
+          cd ./app
+          pip install -r requirements.txt
+          pytest test_app.py -v
