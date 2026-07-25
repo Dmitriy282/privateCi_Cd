@@ -9,36 +9,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # 1. Відступи services на одному рівні з runs-on та steps
+    # Додаємо блок services для запуску контейнерів поруч із тестами
     services:
       db:
-        image: postgres:15-alpine
+        image: postgres:15-alpine # Використовуємо легку версію Postgres
         env:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_password
           POSTGRES_DB: test_db
+        # Прокидаємо порт, щоб додаток міг підключитися через localhost
         ports:
           - 5432:5432
+        # Перевірка здоров'я, щоб тести не почалися до того, як БД буде готова
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+          
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Додано крок для налаштування Python
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10' # Вкажіть потрібну вам версію
-
-      # 3. Об'єднано env та run в одному кроці. 
-      # 4. Виправлено логін, пароль, назву БД та хост (localhost)
       - name: Install dependencies and Run Tests
         env:
+          # Вказуємо реальне підключення до піднятого Postgres (через localhost та з правильними доступами)
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           TESTING: "True"
         run: |
