@@ -21,6 +21,9 @@ jobs:
             docker compose up --build -d
 
       - name: Install dependencies and run tests
+        env:
+          # Жестко переопределяем URL, чтобы избежать подключения к Postgres 'db'
+          DATABASE_URL: sqlite:///:memory:
         run: |
           cd ./app
           pip install -r requirements.txt
