@@ -8,12 +8,12 @@ def client():
     # Configuration for tests: use In-Memory SQLite instead of Postgres
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'    
-    with app.test_client() as client:
-        with app.app_context():
-            db.create_all()
-        yield client
-        with app.app_context():
-            db.drop_all()
+    with app.app_context():
+        db.create_all()
+        with app.test_client() as c:
+            yield c
+        db.drop_all()
+
 
 @patch('app.cache.incr')
 @patch('app.LogEntry.query')
