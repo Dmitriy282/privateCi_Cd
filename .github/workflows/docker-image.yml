@@ -14,7 +14,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+        
+      - name: Start services using Docker Compose
+        run: |
+            cd ./
+            docker compose up -d
+        
       - name: Build Docker image
         uses: docker/build-push-action@v5.3.0
         with:
