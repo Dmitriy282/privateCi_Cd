@@ -20,8 +20,6 @@ jobs:
             cd ./
             docker compose up --build -d
 
-        
-          
       - name: Install dependencies and run tests
         run: |
           cd ./app
