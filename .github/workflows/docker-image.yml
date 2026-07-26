@@ -18,7 +18,8 @@ jobs:
       - name: Start services using Docker Compose
         run: |
             cd ./
-            docker compose up -d
+            docker-compose up --build -d
+
         
           
       - name: Install dependencies and run tests
