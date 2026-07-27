@@ -7,8 +7,7 @@ on:
 env:
   # Задаем единое имя образа для всех шагов
   # Важно: GHCR требует, чтобы имя владельца было в нижнем регистре
-  IMAGE_NAME: ghcr.io/dmitriy282/my-app:latest ./app
-
+  IMAGE_NAME: ghcr.io/dmitriy282/my-app:latest
   
 jobs:
   build:
