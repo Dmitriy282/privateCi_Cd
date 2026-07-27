@@ -4,7 +4,12 @@ on:
   push:
     branches:
       - '*'
+env:
+  # Задаем единое имя образа для всех шагов
+  # Важно: GHCR требует, чтобы имя владельца было в нижнем регистре
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/my-app:latest
 
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,7 +41,7 @@ jobs:
         with:
           context: ./app
           push: true
-          tags: test-image:latest
+          tags: ${{ env.IMAGE_NAME }}
       
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
