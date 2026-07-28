@@ -12,13 +12,15 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+          contents: read
+          packages: write
     # Додаємо блок services для запуску контейнерів поруч із тестами
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+          
       - name: Install dependencies and run tests
         env:
           # Жестко переопределяем URL, чтобы избежать подключения к Postgres 'db'
@@ -37,9 +39,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Build Docker image
-        permissions:
-          contents: read
-          packages: write
         uses: docker/build-push-action@v5.3.0
         with:
           context: ./app
