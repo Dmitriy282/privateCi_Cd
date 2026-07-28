@@ -56,11 +56,11 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Скачиваем обновленный образ
-            docker pull ghcr.io/${{ github.repository_owner }}/my-app:latest
+            sudo docker pull ghcr.io/${{ github.repository_owner }}/my-app:latest
             
             # Останавливаем и удаляем старый контейнер (если он запущен)
-            docker stop my-app-container || true
-            docker rm my-app-container || true
+            sudo docker stop my-app-container || true
+            sudo docker rm my-app-container || true
             
             # Запускаем новый контейнер
-            docker run -d --name my-app-container -p 80:80 ghcr.io/${{ github.repository_owner }}/my-app:latest
+            sudo docker run -d --name my-app-container -p 80:80 ghcr.io/${{ github.repository_owner }}/my-app:latest
