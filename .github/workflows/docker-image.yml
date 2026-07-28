@@ -55,6 +55,10 @@ jobs:
             # Логинимся в GHCR уже внутри вашего сервера
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+            sudo usermod -aG docker $USER
+
+            newgrp docker
+
             # Скачиваем обновленный образ
             docker pull ghcr.io/dmitriy282/my-app:latest
 
