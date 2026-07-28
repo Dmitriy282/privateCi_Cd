@@ -35,7 +35,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Build Docker image
+        permissions:
+          contents: read
+          packages: write
         uses: docker/build-push-action@v5.3.0
         with:
           context: ./app
