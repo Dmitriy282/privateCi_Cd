@@ -63,4 +63,4 @@ jobs:
             sudo docker rm my-app-container || true
             
             # Запускаем новый контейнер
-            sudo docker run -d --name my-app-container -p 80:80 ghcr.io/${{ github.repository_owner }}/my-app:latest
+            sudo docker run -d --name my-app-container -p 80:80 ghcr.io/dmitriy282/my-app:latest
