@@ -8,7 +8,7 @@ env:
   # Задаем единое имя образа для всех шагов
   # Важно: GHCR требует, чтобы имя владельца было в нижнем регистре
   IMAGE_NAME: ghcr.io/dmitriy282/my-app:latest
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-          
+
       - name: Install dependencies and run tests
         env:
           # Жестко переопределяем URL, чтобы избежать подключения к Postgres 'db'
@@ -37,14 +37,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Build Docker image
         uses: docker/build-push-action@v5.3.0
         with:
           context: ./app
           push: true
           tags: ${{ env.IMAGE_NAME }}
-      
+
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -54,13 +54,18 @@ jobs:
           script: |
             # Логинимся в GHCR уже внутри вашего сервера
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
+
+            sudo groupadd docker
+
+            sudo usermod -aG docker $ubuntu
+
+            newgrp docker
             # Скачиваем обновленный образ
-            sudo docker pull ghcr.io/${{ github.repository_owner }}/my-app:latest
-            
+            docker pull ghcr.io/${{ github.repository_owner }}/my-app:latest
+
             # Останавливаем и удаляем старый контейнер (если он запущен)
-            sudo docker stop my-app-container || true
-            sudo docker rm my-app-container || true
-            
+            docker stop my-app-container || true
+            docker rm my-app-container || true
+
             # Запускаем новый контейнер
-            sudo docker run -d --name my-app-container -p 5000:5000 ghcr.io/dmitriy282/my-app:latest
+            docker run -d --name my-app-container -p 5000:5000 ghcr.io/dmitriy282/my-app:latest
