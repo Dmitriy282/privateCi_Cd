@@ -52,7 +52,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            ssh ubuntu@18.153.90.238
+            ssh ubuntu@18.153.90.238 -p 22
             # Логинимся в GHCR уже внутри вашего сервера
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
