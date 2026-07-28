@@ -61,7 +61,7 @@ jobs:
 
             newgrp docker
             # Скачиваем обновленный образ
-            docker pull ghcr.io/${{ github.repository_owner }}/my-app:latest
+            docker pull ghcr.io/dmitriy282/my-app:latest
 
             # Останавливаем и удаляем старый контейнер (если он запущен)
             docker stop my-app-container || true
