@@ -79,4 +79,4 @@ jobs:
             docker rm my-app-container || true
 
             # Запускаем новый контейнер
-            docker run -d --name my-app-container -p 5000:5000 ghcr.io/dmitriy282/my-app:latest 
+            docker-compose up -d

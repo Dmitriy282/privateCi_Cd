@@ -1,6 +1,13 @@
 version: '3.8'
 
 services:
+  my-app:
+    image: ghcr.io/dmitriy282/my-app:latest
+    container_name: my-app-container
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    
   web:
     build: ./app
     ports:
