@@ -77,4 +77,4 @@ jobs:
             docker rm my-app-container || true
 
             # Запускаем новый контейнер
-            docker-compose up -d
+            docker compose up -d
