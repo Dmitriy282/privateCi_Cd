@@ -68,8 +68,6 @@ jobs:
 
             newgrp docker
 
-            docker-compose up -d
-
             # Скачиваем обновленный образ
             docker pull ghcr.io/dmitriy282/my-app:latest
 
