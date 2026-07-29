@@ -21,6 +21,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Start services
+
+        run: | 
+         cd ./
+         docker compose up -d
+        
+
       - name: Install dependencies and run tests
         env:
           # Жестко переопределяем URL, чтобы избежать подключения к Postgres 'db'
