@@ -72,9 +72,7 @@ jobs:
             docker pull ghcr.io/dmitriy282/my-app:latest
 
 
-            # Останавливаем и удаляем старый контейнер (если он запущен)
-            docker stop my-app-container || true
-            docker rm my-app-container || true
+            cd /home/ubuntu
 
             # Запускаем новый контейнер
             docker compose up -d
