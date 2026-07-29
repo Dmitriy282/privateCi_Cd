@@ -1,17 +1,14 @@
 version: '3.8'
 
 services:
-  my-app:
+
+  web:
     image: ghcr.io/dmitriy282/my-app:latest
     container_name: my-app-container
     ports:
       - "5000:5000"
     restart: unless-stopped
-    
-  web:
-    build: ./app
-    ports:
-      - "5001:5000"
+
     environment:
       - DATABASE_URL=postgresql://space_admin:supersecret@db:5432/space_logbook
       - REDIS_HOST=redis
