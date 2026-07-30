@@ -54,7 +54,7 @@ services:
       - GC_LOKI_USER=grafanacloud-livelypumpkin1825-alert-state-history
       - GC_PROMETHEUS_URL=https://prometheus-prod-39-prod-eu-north-0.grafana.net/api/prom/push
       - GC_PROMETHEUS_USER=grafanacloud-livelypumpkin1825-prom
-      - GC_API_KEY: ${{secrets.GRAFANA_API_KEY}}
+      - GC_API_KEY= $GRAFANA_API_KEY
     restart: unless-stopped
 
 volumes:
