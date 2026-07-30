@@ -1,22 +1,13 @@
 version: '3.8'
 
-networks:
-  monitoring:
-    driver: bridge
-
-volumes:
-  prometheus_data: {}
-  pgdata: {}
-
 services:
-  # ==========================================
-  # APPLICATION SERVICES
-  # ==========================================
+
   web:
     image: ghcr.io/dmitriy282/my-app:latest
     ports:
       - "5000:5000"
     restart: unless-stopped
+
     environment:
       - DATABASE_URL=postgresql://space_admin:supersecret@db:5432/space_logbook
       - REDIS_HOST=redis
@@ -48,41 +39,5 @@ services:
     ports:
       - "6379:6379"
 
-  # ==========================================
-  # MONITORING SERVICES
-  # ==========================================
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
-    restart: unless-stopped
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-    expose:
-      - 9100
-    networks:
-      - monitoring
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    restart: unless-stopped
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-    expose:
-      - 9090
-    networks:
-      - monitoring
+volumes:
+  pgdata:
