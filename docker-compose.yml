@@ -50,11 +50,11 @@ services:
       - --server.http.listen-addr=0.0.0.0:12345
       - /etc/alloy/config.alloy
     environment:
-      - GC_LOKI_URL=https://<your-loki-endpoint>/loki/api/v1/push
-      - GC_LOKI_USER=<your-loki-user-id>
-      - GC_PROMETHEUS_URL=https://<your-prometheus-endpoint>/api/v1/push
-      - GC_PROMETHEUS_USER=<your-prometheus-user-id>
-      - GC_API_KEY=<your-grafana-cloud-api-key>
+      - GC_LOKI_URL=https://insight-logs-prod-eu-north-0.grafana.net
+      - GC_LOKI_USER=grafanacloud-livelypumpkin1825-alert-state-history
+      - GC_PROMETHEUS_URL=https://prometheus-prod-39-prod-eu-north-0.grafana.net/api/prom
+      - GC_PROMETHEUS_USER= grafanacloud-livelypumpkin1825-prom
+      - GC_API_KEY: ${{secrets.GRAFANA_API_KEY}}
     restart: unless-stopped
 
 volumes:
