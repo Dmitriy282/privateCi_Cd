@@ -88,3 +88,15 @@ jobs:
 
             # Запускаем новый контейнер
             docker compose up -d
+      - name: Send Deployment Annotation to Grafana
+        if: success()
+        run: |
+          curl -X POST -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "time": '$(date +%s%3N)',
+            "isRegion": false,
+            "tags": ["deploy", "production", "github-actions"],
+            "text": "Deployment of space-explorer-logbook triggered by ${{ github.actor }}. Commit: ${{ github.sha }}"
+          }' \
+          ${{ secrets.GRAFANA_URL }}/api/annotations
