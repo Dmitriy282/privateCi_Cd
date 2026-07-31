@@ -96,15 +96,27 @@ jobs:
 
             # Запускаем новый контейнер
             docker compose up -d
+      
       - name: Send Deployment Annotation to Grafana
         if: success()
+        env:
+          GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+          ACTOR: ${{ github.actor }}
+          SHA: ${{ github.sha }}
         run: |
-          curl -X POST -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "time": '$(date +%s%3N)',
-            "isRegion": false,
-            "tags": ["deploy", "production", "github-actions"],
-            "text": "Deployment of space-explorer-logbook triggered by ${{ github.actor }}. Commit: ${{ github.sha }}"
-          }' \
-          ${{ secrets.GRAFANA_URL }}/api/annotations
+          PAYLOAD=$(jq -n \
+            --arg time "$(date +%s%3N)" \
+            --arg text "Deployment of space-explorer-logbook triggered by $ACTOR. Commit: $SHA" \
+            '{
+              time: ($time | tonumber),
+              isRegion: false,
+              # Зверніть увагу на теги. За ними ви будете шукати цю анотацію в Grafana
+              tags: ["deploy", "space-explorer-logbook", "production"], 
+              text: $text
+            }')
+
+          curl -s -X POST -H "Authorization: Bearer $GRAFANA_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$GRAFANA_URL/api/annotations"
