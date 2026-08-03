@@ -1,5 +1,5 @@
 // ----------------------------------------------------
-// 1. НАЛАШТУВАННЯ КЛІЄНТІВ ДЛЯ GRAFANA CLOUD
+// 1. CONFIGURATION OF CLIENTS FOR GRAFANA CLOUD
 // ----------------------------------------------------
 
 loki.write "grafana_cloud" {
@@ -23,21 +23,31 @@ prometheus.remote_write "grafana_cloud" {
 }
 
 // ----------------------------------------------------
-// 2. ЗБІР ЛОГІВ З УСІХ DOCKER-КОНТЕЙНЕРІВ
+// 2. COLLECTING LOGS FROM ALL DOCKER CONTAINERS
 // ----------------------------------------------------
 
 discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
 }
 
+discovery.relabel "docker_logs_relabel" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+}
+
 loki.source.docker "docker_logs" {
   host       = "unix:///var/run/docker.sock"
-  targets    = discovery.docker.containers.targets
+  targets    = discovery.relabel.docker_logs_relabel.output
   forward_to = [loki.write.grafana_cloud.receiver]
 }
 
 // ----------------------------------------------------
-// 3. ЗБІР СИСТЕМНИХ МЕТРИК КОНТЕЙНЕРІВ (cadvisor)
+// 3. COLLECTING SYSTEM METRICS FROM CONTAINERS (cadvisor)
 // ----------------------------------------------------
 
 prometheus.exporter.cadvisor "docker_metrics" {

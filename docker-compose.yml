@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   web:
-    image: ghcr.io/dmitriy282/my-app:latest
+    image: ghcr.io/dmitriy282/my-app:${IMAGE_TAG:-latest}
     ports:
       - "5000:5000"
     restart: unless-stopped
@@ -27,7 +27,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U space_admin"]
+      test: [ "CMD-SHELL", "pg_isready -U space_admin" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -38,7 +38,7 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-   
+
   alloy:
     image: grafana/alloy:v1.2.1
     container_name: alloy
@@ -54,7 +54,7 @@ services:
       - GC_LOKI_USER=grafanacloud-livelypumpkin1825-alert-state-history
       - GC_PROMETHEUS_URL=https://prometheus-prod-39-prod-eu-north-0.grafana.net/api/prom/push
       - GC_PROMETHEUS_USER=grafanacloud-livelypumpkin1825-prom
-      - GC_API_KEY= $GRAFANA_API_KEY
+      - GC_API_KEY=${GRAFANA_API_KEY}
     restart: unless-stopped
 
 volumes:
