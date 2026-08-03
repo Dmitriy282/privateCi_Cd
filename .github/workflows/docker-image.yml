@@ -18,14 +18,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Start services
-
-        run: | 
-         cd ./
-         docker compose up -d
-        
       - name: Set image tag
         run: |
+          # Generate a unique image tag using timestamp and commit SHA
           TIMESTAMP=$(date +%s)
           SHA=$(echo ${{ github.sha }} | cut -c1-7)
           echo "IMAGE_TAG=${TIMESTAMP}-${SHA}" >> $GITHUB_ENV
@@ -33,15 +28,16 @@ jobs:
 
       - name: Install dependencies and run tests
         env:
-          # Жестко переопределяем URL, чтобы избежать подключения к Postgres 'db'
+          # Hardcode the DATABASE_URL to avoid connecting to Postgres and use in-memory SQLite instead
           DATABASE_URL: 'sqlite:///:memory:'
         run: |
+          # Run tests locally using in-memory database and mocked redis
           cd ./app
           pip install -r requirements.txt
           pytest test_app.py -v
-      - uses: actions/checkout@v3
 
       - name: Login to GHCR
+        # Authenticate with GitHub Container Registry to allow pushing the built image
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -49,52 +45,47 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
+        # Build the container and push it with both the specific SHA tag and 'latest' tag
         uses: docker/build-push-action@v5.3.0
         with:
           context: ./app
           push: true
-          tags: ghcr.io/dmitriy282/my-app:${{ env.IMAGE_TAG }}
+          tags: |
+            ghcr.io/dmitriy282/my-app:${{ env.IMAGE_TAG }}
+            ghcr.io/dmitriy282/my-app:latest
       
-      - name: Copy docker-compose to server
-        uses: appleboy/scp-action@master
+      - name: Copy deployment files to server
+        # Copy the necessary configuration files (docker-compose and alloy) to the deployment server
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./docker-compose.yml"
-          target: "/home/ubuntu"
-
-      - name: Copy config.alloy to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./config.alloy"
+          source: "docker-compose.yml,config.alloy"
           target: "/home/ubuntu"
       
       - name: Deploy to Server via SSH
+        # Connect to the remote server and deploy the updated application container
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-        
           script: |
-            # Логинимся в GHCR уже внутри вашего сервера
+            # Login to GHCR on the remote server
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            sudo usermod -aG docker $USER
-
-            newgrp docker
-
-            # Скачиваем обновленный образ
-            docker pull ghcr.io/dmitriy282/my-app:${{ env.IMAGE_TAG }}
-
-
+            
+            # Navigate to the deployment directory
             cd /home/ubuntu
-
-            # Запускаем новый контейнер
+            
+            # Create a .env file with secrets for docker-compose
+            echo "GRAFANA_API_KEY=${{ secrets.GRAFANA_API_KEY }}" > .env
+            
+            # Export the image tag so docker-compose uses the newly built version
+            export IMAGE_TAG=${{ env.IMAGE_TAG }}
+            
+            # Pull the new image and start the containers
+            docker pull ghcr.io/dmitriy282/my-app:${IMAGE_TAG}
             docker compose up -d
       
       - name: Send Deployment Annotation to Grafana
@@ -104,18 +95,21 @@ jobs:
           GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
           ACTOR: ${{ github.actor }}
           SHA: ${{ github.sha }}
+        # Create an annotation in Grafana to mark the deployment event on dashboards
         run: |
+          # Build a JSON payload for the Grafana Annotation API
           PAYLOAD=$(jq -n \
             --arg time "$(date +%s%3N)" \
             --arg text "Deployment of space-explorer-logbook triggered by $ACTOR. Commit: $SHA" \
             '{
               time: ($time | tonumber),
               isRegion: false,
-              # Зверніть увагу на теги. За ними ви будете шукати цю анотацію в Grafana
+              # Note the tags. You will use them to search for this annotation in Grafana
               tags: ["deploy", "space-explorer-logbook", "production"], 
               text: $text
             }')
 
+          # Send the annotation request to Grafana Cloud
           curl -s -X POST -H "Authorization: Bearer $GRAFANA_API_KEY" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
